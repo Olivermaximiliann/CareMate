@@ -5,13 +5,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-import { HomeScreen, ChatScreen, MedicineScreen, SOSScreen } from './src/screens';
+import { HomeScreen, CheckInScreen, ChatScreen, MedicineScreen, SOSScreen } from './src/screens';
 import { colors } from './src/theme';
 
 const Tab = createBottomTabNavigator();
 
 const TAB_ICONS = {
   Hjem: { focused: 'home', unfocused: 'home-outline' },
+  'Check-in': { focused: 'heart-circle', unfocused: 'heart-circle-outline' },
   'AI-assistent': { focused: 'chatbubble-ellipses', unfocused: 'chatbubble-ellipses-outline' },
   Medicin: { focused: 'medkit', unfocused: 'medkit-outline' },
   'Hjælp': { focused: 'call', unfocused: 'call-outline' },
@@ -49,6 +50,7 @@ export default function App() {
           })}
         >
           <Tab.Screen name="Hjem" component={HomeScreen} />
+          <Tab.Screen name="Check-in" component={CheckInScreen} />
           <Tab.Screen name="AI-assistent" component={ChatScreen} />
           <Tab.Screen name="Medicin" component={MedicineScreen} />
           <Tab.Screen

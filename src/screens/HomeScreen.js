@@ -25,6 +25,14 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       <Card
+        title="Daglig check-in"
+        description="Fortæl os hvordan du har det"
+        icon="heart-circle-outline"
+        iconColor={colors.warning}
+        onPress={() => navigation.navigate('Check-in')}
+      />
+
+      <Card
         title="AI-assistent"
         description="Stil spørgsmål eller få hjælp"
         icon="chatbubble-ellipses-outline"
