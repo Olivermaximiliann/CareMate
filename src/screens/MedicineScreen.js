@@ -1,119 +1,132 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Modal,
   TextInput,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { ScreenWrapper, BigButton } from '../components';
+import { ScreenWrapper, BigButton, MedicineCard } from '../components';
 import { colors, typography, spacing, borderRadius } from '../theme';
-
-const DEFAULT_MEDICINES = [
-  { id: '1', name: 'Hjertemedicin', time: '08:00', taken: false },
-  { id: '2', name: 'Blodtryks-pille', time: '12:00', taken: false },
-  { id: '3', name: 'Vitaminer', time: '18:00', taken: false },
-];
+import {
+  getAllMedicines,
+  getTodayLog,
+  getMedicineStatus,
+  markMedicineTaken,
+  unmarkMedicineTaken,
+  addMedicine,
+  removeMedicine,
+  seedMedicineData,
+} from '../utils/medicineStorage';
 
 export default function MedicineScreen() {
-  const [medicines, setMedicines] = useState(DEFAULT_MEDICINES);
+  const [medicines, setMedicines] = useState([]);
+  const [todayLog, setTodayLog] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTime, setNewTime] = useState('');
+  const [newDosage, setNewDosage] = useState('');
 
-  const toggleTaken = (id) => {
-    setMedicines((prev) =>
-      prev.map((med) =>
-        med.id === id ? { ...med, taken: !med.taken } : med
-      )
-    );
+  const loadData = useCallback(async () => {
+    await seedMedicineData();
+    const meds = await getAllMedicines();
+    const log = await getTodayLog();
+    setMedicines(meds);
+    setTodayLog(log);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
+
+  const handleTake = async (medicineId) => {
+    await markMedicineTaken(medicineId);
+    await loadData();
   };
 
-  const addMedicine = () => {
-    if (!newName.trim() || !newTime.trim()) {
-      Alert.alert('Mangler oplysninger', 'Udfyld venligst både navn og tidspunkt.');
-      return;
-    }
-    const newMed = {
-      id: Date.now().toString(),
-      name: newName.trim(),
-      time: newTime.trim(),
-      taken: false,
-    };
-    setMedicines((prev) => [...prev, newMed]);
-    setNewName('');
-    setNewTime('');
-    setModalVisible(false);
+  const handleUndo = async (medicineId) => {
+    await unmarkMedicineTaken(medicineId);
+    await loadData();
   };
 
-  const deleteMedicine = (id) => {
+  const handleDelete = (medicine) => {
     Alert.alert(
-      'Slet medicin',
-      'Er du sikker på, at du vil fjerne denne medicin?',
+      'Fjern medicin',
+      `Er du sikker på, at du vil fjerne "${medicine.name}"?`,
       [
         { text: 'Annullér', style: 'cancel' },
         {
-          text: 'Slet',
+          text: 'Fjern',
           style: 'destructive',
-          onPress: () => setMedicines((prev) => prev.filter((m) => m.id !== id)),
+          onPress: async () => {
+            await removeMedicine(medicine.id);
+            await loadData();
+          },
         },
       ]
     );
   };
 
-  const takenCount = medicines.filter((m) => m.taken).length;
+  const handleAdd = async () => {
+    if (!newName.trim() || !newTime.trim()) {
+      Alert.alert('Mangler oplysninger', 'Udfyld venligst både navn og tidspunkt.');
+      return;
+    }
+    await addMedicine(newName, newTime, newDosage || null);
+    setNewName('');
+    setNewTime('');
+    setNewDosage('');
+    setModalVisible(false);
+    await loadData();
+  };
+
+  const takenCount = todayLog.length;
+  const totalCount = medicines.length;
+  const allTaken = totalCount > 0 && takenCount >= totalCount;
 
   return (
     <ScreenWrapper title="Medicin">
-      {/* Statusoversigt */}
-      <View style={styles.statusCard}>
-        <Ionicons name="checkmark-circle" size={36} color={colors.primary} />
-        <Text style={[typography.h3, styles.statusText]}>
-          {takenCount} af {medicines.length} taget i dag
-        </Text>
+      {/* Daglig statusoversigt */}
+      <View style={[styles.statusCard, allTaken && styles.statusCardDone]}>
+        <Ionicons
+          name={allTaken ? 'checkmark-done-circle' : 'medkit'}
+          size={40}
+          color={allTaken ? colors.primary : colors.secondary}
+        />
+        <View style={styles.statusTextContainer}>
+          <Text style={[typography.h3, styles.statusTitle]}>
+            {allTaken ? 'Alle taget i dag!' : 'Dagens medicin'}
+          </Text>
+          <Text style={[typography.body, styles.statusSubtitle]}>
+            {takenCount} af {totalCount} registreret
+          </Text>
+        </View>
       </View>
 
-      {/* Medicinliste */}
-      {medicines.map((med) => (
-        <TouchableOpacity
-          key={med.id}
-          style={[styles.medicineCard, med.taken && styles.medicineTaken]}
-          onPress={() => toggleTaken(med.id)}
-          onLongPress={() => deleteMedicine(med.id)}
-          activeOpacity={0.7}
-          accessibilityLabel={`${med.name} kl. ${med.time}, ${med.taken ? 'taget' : 'ikke taget'}`}
-          accessibilityRole="button"
-        >
-          <View style={styles.medicineIcon}>
-            <Ionicons
-              name={med.taken ? 'checkmark-circle' : 'ellipse-outline'}
-              size={40}
-              color={med.taken ? colors.primary : colors.textSecondary}
-            />
-          </View>
-          <View style={styles.medicineInfo}>
-            <Text
-              style={[
-                typography.h3,
-                med.taken && styles.takenText,
-              ]}
-            >
-              {med.name}
-            </Text>
-            <Text style={typography.bodySmall}>Kl. {med.time}</Text>
-          </View>
-          {med.taken && (
-            <View style={styles.takenBadge}>
-              <Text style={styles.takenBadgeText}>Jeg har taget den</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      ))}
+      {/* Medicinkort */}
+      {medicines.map((med) => {
+        const status = getMedicineStatus(med, todayLog);
+        return (
+          <MedicineCard
+            key={med.id}
+            name={med.name}
+            time={med.time}
+            dosage={med.dosage}
+            status={status}
+            onTake={() => handleTake(med.id)}
+            onUndo={() => handleUndo(med.id)}
+            onLongPress={() => handleDelete(med)}
+          />
+        );
+      })}
 
-      <View style={styles.addButtonContainer}>
+      {/* Tilføj medicin */}
+      <View style={styles.addSection}>
         <BigButton
           title="Tilføj medicin"
           icon="add-circle-outline"
@@ -123,7 +136,7 @@ export default function MedicineScreen() {
       </View>
 
       <Text style={[typography.caption, styles.hint]}>
-        Tryk for at markere som taget. Hold inde for at slette.
+        Hold inde på et kort for at fjerne medicin.
       </Text>
 
       {/* Tilføj-modal */}
@@ -135,9 +148,9 @@ export default function MedicineScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={typography.h2}>Tilføj medicin</Text>
+            <Text style={typography.h2}>Tilføj ny medicin</Text>
 
-            <Text style={[typography.body, styles.label]}>Navn</Text>
+            <Text style={[typography.body, styles.label]}>Navn *</Text>
             <TextInput
               style={styles.input}
               value={newName}
@@ -147,7 +160,7 @@ export default function MedicineScreen() {
               accessibilityLabel="Medicinnavn"
             />
 
-            <Text style={[typography.body, styles.label]}>Tidspunkt</Text>
+            <Text style={[typography.body, styles.label]}>Tidspunkt *</Text>
             <TextInput
               style={styles.input}
               value={newTime}
@@ -158,6 +171,16 @@ export default function MedicineScreen() {
               accessibilityLabel="Tidspunkt"
             />
 
+            <Text style={[typography.body, styles.label]}>Dosering (valgfrit)</Text>
+            <TextInput
+              style={styles.input}
+              value={newDosage}
+              onChangeText={setNewDosage}
+              placeholder="F.eks. 1 tablet"
+              placeholderTextColor={colors.textSecondary}
+              accessibilityLabel="Dosering"
+            />
+
             <View style={styles.modalButtons}>
               <BigButton
                 title="Annullér"
@@ -165,13 +188,14 @@ export default function MedicineScreen() {
                 onPress={() => {
                   setNewName('');
                   setNewTime('');
+                  setNewDosage('');
                   setModalVisible(false);
                 }}
                 style={styles.modalButton}
               />
               <BigButton
                 title="Tilføj"
-                onPress={addMedicine}
+                onPress={handleAdd}
                 style={styles.modalButton}
               />
             </View>
@@ -183,63 +207,49 @@ export default function MedicineScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Statusoversigt
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primaryLight,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  statusText: {
-    marginLeft: spacing.sm,
-    color: colors.primary,
-  },
-  medicineCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
-    marginBottom: spacing.md,
+    marginBottom: spacing.xl,
+    borderLeftWidth: 5,
+    borderLeftColor: colors.secondary,
     elevation: 1,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 3,
   },
-  medicineTaken: {
+  statusCardDone: {
     backgroundColor: colors.primaryLight,
-    opacity: 0.85,
+    borderLeftColor: colors.primary,
   },
-  medicineIcon: {
-    marginRight: spacing.md,
-  },
-  medicineInfo: {
+  statusTextContainer: {
     flex: 1,
+    marginLeft: spacing.md,
   },
-  takenText: {
-    textDecorationLine: 'line-through',
+  statusTitle: {
+    marginBottom: spacing.xs,
+  },
+  statusSubtitle: {
     color: colors.textSecondary,
   },
-  takenBadge: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  takenBadgeText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  addButtonContainer: {
-    marginTop: spacing.lg,
+
+  // Tilføj-sektion
+  addSection: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.sm,
   },
   hint: {
     textAlign: 'center',
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
   },
+
+  // Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
