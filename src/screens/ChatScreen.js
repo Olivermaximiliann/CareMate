@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,71 +8,104 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { SuggestionChips } from '../components';
 import { colors, typography, spacing, borderRadius } from '../theme';
+import {
+  SUGGESTIONS,
+  WELCOME_MESSAGE,
+  sendMessage,
+  createMessage,
+} from '../utils/chatService';
 
-const WELCOME_MESSAGE = {
-  id: '0',
-  text: 'Hej! Jeg er CareMate, din digitale assistent. Hvordan kan jeg hjælpe dig i dag?',
-  sender: 'ai',
-  timestamp: new Date(),
-};
+// ---------------------------------------------------------------------------
+// Typing-indikator
+// ---------------------------------------------------------------------------
 
-// Simpel lokal AI-simulering – kan udskiftes med en rigtig API
-function getAIResponse(message) {
-  const lower = message.toLowerCase();
-  if (lower.includes('hej') || lower.includes('godmorgen') || lower.includes('god dag')) {
-    return 'Hej! Det er dejligt at høre fra dig. Hvad kan jeg hjælpe med?';
-  }
-  if (lower.includes('vejr')) {
-    return 'Jeg kan desværre ikke tjekke vejret lige nu, men du kan kigge ud af vinduet eller spørge en pårørende.';
-  }
-  if (lower.includes('medicin')) {
-    return 'Du kan se dine medicinpåmindelser under fanen "Medicin". Vil du have hjælp til noget andet?';
-  }
-  if (lower.includes('hjælp') || lower.includes('hvad kan du')) {
-    return 'Jeg kan hjælpe dig med at besvare spørgsmål, minde dig om medicin og meget mere. Spørg bare løs!';
-  }
-  if (lower.includes('tak')) {
-    return 'Det var så lidt! Jeg er her, hvis du har brug for mere hjælp.';
-  }
-  return 'Tak for din besked. Jeg gør mit bedste for at hjælpe dig. Kan du fortælle mere om, hvad du har brug for?';
+function TypingIndicator() {
+  return (
+    <View style={[styles.messageBubble, styles.aiBubble, styles.typingBubble]}>
+      <View style={styles.aiLabel}>
+        <Ionicons name="sparkles" size={18} color={colors.primary} />
+        <Text style={styles.aiLabelText}>CareMate</Text>
+      </View>
+      <Text style={[typography.body, styles.typingDots]}>Skriver ...</Text>
+    </View>
+  );
 }
 
+// ---------------------------------------------------------------------------
+// Hovedskærm
+// ---------------------------------------------------------------------------
+
 export default function ChatScreen() {
-  const [messages, setMessages] = useState([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState([
+    { ...WELCOME_MESSAGE, timestamp: new Date().toISOString() },
+  ]);
   const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const flatListRef = useRef(null);
 
-  const sendMessage = () => {
-    const text = inputText.trim();
-    if (!text) return;
+  const scrollToEnd = useCallback(() => {
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+  }, []);
 
-    const userMessage = {
-      id: Date.now().toString(),
-      text,
-      sender: 'user',
-      timestamp: new Date(),
-    };
+  const handleSend = useCallback(
+    async (text) => {
+      const trimmed = (text || inputText).trim();
+      if (!trimmed || isTyping) return;
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInputText('');
+      // Tilføj brugerbesked
+      const userMsg = createMessage(trimmed, 'user');
+      setMessages((prev) => [...prev, userMsg]);
+      setInputText('');
+      setShowSuggestions(false);
+      setIsTyping(true);
+      scrollToEnd();
 
-    // Simuler AI-svar med kort forsinkelse
-    setTimeout(() => {
-      const aiMessage = {
-        id: (Date.now() + 1).toString(),
-        text: getAIResponse(text),
-        sender: 'ai',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-    }, 800);
-  };
+      try {
+        // Hent AI-svar (mock eller fremtidig API)
+        const replyText = await sendMessage(trimmed, messages);
+        const aiMsg = createMessage(replyText, 'ai');
+        setMessages((prev) => [...prev, aiMsg]);
+      } catch {
+        const errorMsg = createMessage(
+          'Beklager, der opstod en fejl. Prøv venligst igen.',
+          'ai'
+        );
+        setMessages((prev) => [...prev, errorMsg]);
+      } finally {
+        setIsTyping(false);
+        scrollToEnd();
+      }
+    },
+    [inputText, isTyping, messages, scrollToEnd]
+  );
 
-  const renderMessage = ({ item }) => {
+  const handleSuggestionSelect = useCallback(
+    (suggestion) => {
+      handleSend(suggestion.text);
+    },
+    [handleSend]
+  );
+
+  const handleMicPress = useCallback(() => {
+    Alert.alert(
+      'Stemmestyring',
+      'Stemmestyring er ikke tilgængelig endnu, men kommer snart.\n\nIndtil da kan du skrive din besked eller vælge et forslag.',
+      [{ text: 'Forstået' }]
+    );
+  }, []);
+
+  // -------------------------------------------------------------------------
+  // Render-funktioner
+  // -------------------------------------------------------------------------
+
+  const renderMessage = useCallback(({ item }) => {
     const isUser = item.sender === 'user';
     return (
       <View
@@ -98,13 +131,30 @@ export default function ChatScreen() {
         </Text>
       </View>
     );
-  };
+  }, []);
+
+  const renderFooter = useCallback(() => {
+    if (!isTyping) return null;
+    return <TypingIndicator />;
+  }, [isTyping]);
+
+  // -------------------------------------------------------------------------
+  // Layout
+  // -------------------------------------------------------------------------
+
+  const hasUserMessages = messages.length > 1;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* Header */}
       <View style={styles.header}>
-        <Ionicons name="chatbubble-ellipses" size={32} color={colors.primary} />
-        <Text style={[typography.h2, styles.headerTitle]}>AI-assistent</Text>
+        <View style={styles.headerIcon}>
+          <Ionicons name="chatbubble-ellipses" size={28} color={colors.white} />
+        </View>
+        <View>
+          <Text style={[typography.h3, styles.headerTitle]}>AI-assistent</Text>
+          <Text style={styles.headerSubtitle}>Din digitale hjælper</Text>
+        </View>
       </View>
 
       <KeyboardAvoidingView
@@ -112,17 +162,40 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={90}
       >
+        {/* Beskedliste */}
         <FlatList
           ref={flatListRef}
           data={messages}
           renderItem={renderMessage}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.messageList}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
+          onContentSizeChange={scrollToEnd}
           showsVerticalScrollIndicator={false}
+          ListFooterComponent={renderFooter}
         />
 
+        {/* Forslag */}
+        <SuggestionChips
+          suggestions={SUGGESTIONS}
+          onSelect={handleSuggestionSelect}
+          visible={showSuggestions && !hasUserMessages}
+        />
+
+        {/* Inputlinje */}
         <View style={styles.inputContainer}>
+          {/* Mikrofonknap */}
+          <TouchableOpacity
+            style={styles.micButton}
+            onPress={handleMicPress}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Tal i stedet for at skrive"
+            accessibilityHint="Stemmestyring er endnu ikke tilgængelig"
+          >
+            <Ionicons name="mic-outline" size={28} color={colors.primary} />
+          </TouchableOpacity>
+
+          {/* Tekstfelt */}
           <TextInput
             style={styles.input}
             value={inputText}
@@ -132,23 +205,26 @@ export default function ChatScreen() {
             multiline
             maxLength={500}
             returnKeyType="send"
-            onSubmitEditing={sendMessage}
-            accessibilityLabel="Besked-felt"
+            onSubmitEditing={() => handleSend()}
+            editable={!isTyping}
+            accessibilityLabel="Skriv din besked her"
           />
+
+          {/* Send-knap */}
           <TouchableOpacity
             style={[
               styles.sendButton,
-              !inputText.trim() && styles.sendButtonDisabled,
+              (!inputText.trim() || isTyping) && styles.sendButtonDisabled,
             ]}
-            onPress={sendMessage}
-            disabled={!inputText.trim()}
+            onPress={() => handleSend()}
+            disabled={!inputText.trim() || isTyping}
             accessibilityLabel="Send besked"
             accessibilityRole="button"
           >
             <Ionicons
               name="send"
-              size={26}
-              color={inputText.trim() ? colors.white : colors.textSecondary}
+              size={24}
+              color={inputText.trim() && !isTyping ? colors.white : colors.textSecondary}
             />
           </TouchableOpacity>
         </View>
@@ -156,6 +232,10 @@ export default function ChatScreen() {
     </SafeAreaView>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   safe: {
@@ -165,6 +245,8 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+
+  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -174,9 +256,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  headerTitle: {
-    marginLeft: spacing.sm,
+  headerIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
   },
+  headerTitle: {
+    marginBottom: 0,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+
+  // Beskedliste
   messageList: {
     padding: spacing.lg,
     paddingBottom: spacing.md,
@@ -208,14 +305,34 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginLeft: 6,
   },
+
+  // Typing
+  typingBubble: {
+    opacity: 0.8,
+  },
+  typingDots: {
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+  },
+
+  // Inputlinje
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.border,
+  },
+  micButton: {
+    width: 52,
+    height: 52,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.xs,
   },
   input: {
     flex: 1,
@@ -228,13 +345,13 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   sendButton: {
-    width: 58,
-    height: 58,
+    width: 52,
+    height: 52,
     borderRadius: borderRadius.full,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: spacing.sm,
+    marginLeft: spacing.xs,
   },
   sendButtonDisabled: {
     backgroundColor: colors.border,
