@@ -84,7 +84,7 @@ export default function ChatScreen() {
       >
         {!isUser && (
           <View style={styles.aiLabel}>
-            <Ionicons name="sparkles" size={16} color={colors.primary} />
+            <Ionicons name="sparkles" size={18} color={colors.primary} />
             <Text style={styles.aiLabelText}>CareMate</Text>
           </View>
         )}
@@ -103,8 +103,8 @@ export default function ChatScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <Ionicons name="chatbubble-ellipses" size={28} color={colors.primary} />
-        <Text style={[typography.h2, styles.headerTitle]}>CareMate Chat</Text>
+        <Ionicons name="chatbubble-ellipses" size={32} color={colors.primary} />
+        <Text style={[typography.h2, styles.headerTitle]}>AI-assistent</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -147,7 +147,7 @@ export default function ChatScreen() {
           >
             <Ionicons
               name="send"
-              size={24}
+              size={26}
               color={inputText.trim() ? colors.white : colors.textSecondary}
             />
           </TouchableOpacity>
@@ -203,10 +203,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   aiLabelText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: colors.primary,
-    marginLeft: 4,
+    marginLeft: 6,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -223,13 +223,13 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    fontSize: 20,
-    maxHeight: 120,
+    fontSize: 22,
+    maxHeight: 140,
     color: colors.text,
   },
   sendButton: {
-    width: 52,
-    height: 52,
+    width: 58,
+    height: 58,
     borderRadius: borderRadius.full,
     backgroundColor: colors.primary,
     alignItems: 'center',

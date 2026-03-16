@@ -35,7 +35,7 @@ export default function BigButton({
       {icon && (
         <Ionicons
           name={icon}
-          size={28}
+          size={30}
           color={textColor}
           style={styles.icon}
         />
@@ -50,10 +50,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.lg,
-    minHeight: 64,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.xl,
+    minHeight: 72,
     elevation: 2,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },

@@ -2,12 +2,12 @@ export { colors } from './colors';
 export { typography } from './typography';
 
 export const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-  xxl: 48,
+  xs: 6,
+  sm: 12,
+  md: 20,
+  lg: 28,
+  xl: 40,
+  xxl: 56,
 };
 
 export const borderRadius = {

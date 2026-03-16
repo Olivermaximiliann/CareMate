@@ -15,37 +15,37 @@ export default function HomeScreen({ navigation }) {
   return (
     <ScreenWrapper>
       <View style={styles.greeting}>
-        <Ionicons name="sunny-outline" size={36} color={colors.primary} />
+        <Ionicons name="sunny-outline" size={44} color={colors.primary} />
         <Text style={[typography.h1, styles.greetingText]}>
           {getGreeting()}!
         </Text>
         <Text style={[typography.body, styles.subtitle]}>
-          Hvad kan jeg hjælpe dig med?
+          Hvad kan jeg hjælpe dig med i dag?
         </Text>
       </View>
 
       <Card
-        title="Tal med CareMate"
+        title="AI-assistent"
         description="Stil spørgsmål eller få hjælp"
         icon="chatbubble-ellipses-outline"
         iconColor={colors.primary}
-        onPress={() => navigation.navigate('Chat')}
+        onPress={() => navigation.navigate('AI-assistent')}
       />
 
       <Card
         title="Medicin"
-        description="Se dine påmindelser"
+        description="Se dine medicinpåmindelser"
         icon="medkit-outline"
         iconColor={colors.secondary}
         onPress={() => navigation.navigate('Medicin')}
       />
 
       <Card
-        title="Nødopkald"
-        description="Ring efter hjælp"
+        title="Kontakter og hjælp"
+        description="Ring til pårørende eller nødtjenester"
         icon="call-outline"
         iconColor={colors.danger}
-        onPress={() => navigation.navigate('SOS')}
+        onPress={() => navigation.navigate('Hjælp')}
       />
     </ScreenWrapper>
   );
@@ -55,14 +55,14 @@ const styles = StyleSheet.create({
   greeting: {
     alignItems: 'center',
     paddingVertical: spacing.xl,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   greetingText: {
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
     textAlign: 'center',
   },
   subtitle: {
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
     color: colors.textSecondary,
     textAlign: 'center',
   },

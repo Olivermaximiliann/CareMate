@@ -47,11 +47,11 @@ export default function SOSScreen() {
   };
 
   return (
-    <ScreenWrapper title="Nødopkald">
+    <ScreenWrapper title="Kontakter og hjælp">
       {/* SOS-knap */}
       <View style={styles.sosContainer}>
         <BigButton
-          title="SOS – Ring 112"
+          title="Få hjælp nu – Ring 112"
           icon="warning-outline"
           variant="danger"
           onPress={handleSOS}
@@ -85,7 +85,7 @@ export default function SOSScreen() {
 
       <View style={styles.infoCard}>
         <View style={styles.infoRow}>
-          <Ionicons name="call" size={24} color={colors.danger} />
+          <Ionicons name="call" size={28} color={colors.danger} />
           <View style={styles.infoText}>
             <Text style={typography.h3}>112</Text>
             <Text style={typography.bodySmall}>Akut nødsituation</Text>
@@ -95,7 +95,7 @@ export default function SOSScreen() {
         <View style={styles.divider} />
 
         <View style={styles.infoRow}>
-          <Ionicons name="medkit" size={24} color={colors.secondary} />
+          <Ionicons name="medkit" size={28} color={colors.secondary} />
           <View style={styles.infoText}>
             <Text style={typography.h3}>1813</Text>
             <Text style={typography.bodySmall}>Lægevagten (ikke akut)</Text>
@@ -105,7 +105,7 @@ export default function SOSScreen() {
         <View style={styles.divider} />
 
         <View style={styles.infoRow}>
-          <Ionicons name="information-circle" size={24} color={colors.primary} />
+          <Ionicons name="information-circle" size={28} color={colors.primary} />
           <View style={styles.infoText}>
             <Text style={typography.h3}>70 201 201</Text>
             <Text style={typography.bodySmall}>Giftlinjen</Text>
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
   sosButton: {
     width: '100%',
-    minHeight: 80,
+    minHeight: 88,
     borderRadius: borderRadius.xl,
   },
   sosHint: {
@@ -131,8 +131,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   sectionTitle: {
-    marginTop: spacing.md,
-    marginBottom: spacing.md,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
   },
   infoCard: {
     backgroundColor: colors.white,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
   },
   infoText: {
     marginLeft: spacing.md,
@@ -155,6 +155,6 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: colors.border,
-    marginVertical: spacing.sm,
+    marginVertical: spacing.md,
   },
 });

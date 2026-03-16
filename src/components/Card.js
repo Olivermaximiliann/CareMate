@@ -16,7 +16,7 @@ export default function Card({ title, description, icon, iconColor, onPress, sty
     >
       {icon && (
         <View style={[styles.iconContainer, { backgroundColor: (iconColor || colors.primary) + '15' }]}>
-          <Ionicons name={icon} size={32} color={iconColor || colors.primary} />
+          <Ionicons name={icon} size={36} color={iconColor || colors.primary} />
         </View>
       )}
       <View style={styles.content}>
@@ -26,7 +26,7 @@ export default function Card({ title, description, icon, iconColor, onPress, sty
         )}
       </View>
       {onPress && (
-        <Ionicons name="chevron-forward" size={24} color={colors.textSecondary} />
+        <Ionicons name="chevron-forward" size={28} color={colors.textSecondary} />
       )}
     </Container>
   );
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
     elevation: 1,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 1 },
@@ -47,9 +47,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: borderRadius.md,
+    width: 64,
+    height: 64,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,

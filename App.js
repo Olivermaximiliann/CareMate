@@ -12,9 +12,9 @@ const Tab = createBottomTabNavigator();
 
 const TAB_ICONS = {
   Hjem: { focused: 'home', unfocused: 'home-outline' },
-  Chat: { focused: 'chatbubble-ellipses', unfocused: 'chatbubble-ellipses-outline' },
+  'AI-assistent': { focused: 'chatbubble-ellipses', unfocused: 'chatbubble-ellipses-outline' },
   Medicin: { focused: 'medkit', unfocused: 'medkit-outline' },
-  SOS: { focused: 'call', unfocused: 'call-outline' },
+  'Hjælp': { focused: 'call', unfocused: 'call-outline' },
 };
 
 export default function App() {
@@ -32,35 +32,35 @@ export default function App() {
             tabBarActiveTintColor: colors.primary,
             tabBarInactiveTintColor: colors.textSecondary,
             tabBarStyle: {
-              height: 80,
-              paddingBottom: 12,
-              paddingTop: 8,
+              height: 90,
+              paddingBottom: 14,
+              paddingTop: 10,
               borderTopWidth: 1,
               borderTopColor: colors.border,
               backgroundColor: colors.white,
             },
             tabBarLabelStyle: {
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: '600',
             },
             tabBarIconStyle: {
-              marginTop: 4,
+              marginTop: 6,
             },
           })}
         >
           <Tab.Screen name="Hjem" component={HomeScreen} />
-          <Tab.Screen name="Chat" component={ChatScreen} />
+          <Tab.Screen name="AI-assistent" component={ChatScreen} />
           <Tab.Screen name="Medicin" component={MedicineScreen} />
           <Tab.Screen
-            name="SOS"
+            name="Hjælp"
             component={SOSScreen}
             options={{
               tabBarLabelStyle: {
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: '700',
                 color: colors.danger,
               },
-              tabBarIconStyle: { marginTop: 4 },
+              tabBarIconStyle: { marginTop: 6 },
             }}
           />
         </Tab.Navigator>

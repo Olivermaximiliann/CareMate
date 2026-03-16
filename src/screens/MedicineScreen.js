@@ -70,7 +70,7 @@ export default function MedicineScreen() {
     <ScreenWrapper title="Medicin">
       {/* Statusoversigt */}
       <View style={styles.statusCard}>
-        <Ionicons name="checkmark-circle" size={32} color={colors.primary} />
+        <Ionicons name="checkmark-circle" size={36} color={colors.primary} />
         <Text style={[typography.h3, styles.statusText]}>
           {takenCount} af {medicines.length} taget i dag
         </Text>
@@ -90,7 +90,7 @@ export default function MedicineScreen() {
           <View style={styles.medicineIcon}>
             <Ionicons
               name={med.taken ? 'checkmark-circle' : 'ellipse-outline'}
-              size={36}
+              size={40}
               color={med.taken ? colors.primary : colors.textSecondary}
             />
           </View>
@@ -107,7 +107,7 @@ export default function MedicineScreen() {
           </View>
           {med.taken && (
             <View style={styles.takenBadge}>
-              <Text style={styles.takenBadgeText}>Taget</Text>
+              <Text style={styles.takenBadgeText}>Jeg har taget den</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
     elevation: 1,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 1 },
@@ -224,17 +224,17 @@ const styles = StyleSheet.create({
   },
   takenBadge: {
     backgroundColor: colors.primary,
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
   takenBadgeText: {
     color: colors.white,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
   addButtonContainer: {
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
   },
   hint: {
     textAlign: 'center',
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderRadius: borderRadius.md,
     padding: spacing.md,
-    fontSize: 20,
+    fontSize: 22,
     color: colors.text,
     borderWidth: 1,
     borderColor: colors.border,
